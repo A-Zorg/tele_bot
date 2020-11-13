@@ -1,5 +1,9 @@
 from telethon import TelegramClient, events
 import asyncio
+from base.functions import  find_button, find_text_from_table
+from features.logger_file import LogGen
+
+logger = LogGen.loggen()
 
 class User():
     """
@@ -11,16 +15,14 @@ class User():
     client - object of TelegramClient()
     bot - name of the bot who you talk to
     """
-    def __init__(self, client, bot):
+    def __init__(self, client, bot, table=[]):
         self.client = client
         self.bot = bot
         self.loop = asyncio.get_event_loop()
+        self.table = table
 
-    def find_button(self,message, button_name):
-        for butt_row in message.buttons:
-            for button in butt_row:
-                if button_name in button.text:
-                    return button
+
+
 
     async def get_last_message(self):
         message = await self.client.get_messages(self.bot, limit=1)
@@ -30,11 +32,16 @@ class User():
         messages = await self.client.get_messages(self.bot, limit=quantity)
         return messages
 
+    async def xxx(self, conv):
+        conv.wait_event(events.NewMessage(from_users=self.bot))
+        conv.wait_event(events.NewMessage(from_users=self.bot))
+
     async def wait_after_click_button(self):
         async with self.client.conversation(self.bot) as conv:
             edit = conv.wait_event(events.MessageEdited(from_users=self.bot))
-            deleted = conv.wait_event(events.MessageDeleted)
+            deleted = conv.wait_event(events.NewMessage(from_users=self.bot))
             done, pending = await asyncio.wait([edit, deleted], return_when='FIRST_COMPLETED')
+        await asyncio.sleep(2)
 
     async def wait_after_sending_message(self, amount=2):
         async with self.client.conversation(self.bot) as conv:
@@ -42,11 +49,11 @@ class User():
                 try:
                     await conv.wait_event(events.NewMessage(from_users=self.bot))
                 except:
-                    print('hjjh')
-
+                    logger.error("could not wait")
+        await asyncio.sleep(2)
     async def async_click_button(self, tex):
-        message = await self.get_last_message()
-        button = self.find_button(message, tex)
+        messages = await self.last_messages()
+        button = find_button(messages, tex)
         message = self.get_last_message()
         event = button.click()
         await asyncio.wait({event, message},return_when='FIRST_COMPLETED' )
@@ -68,6 +75,15 @@ class User():
                 self.check_text = True
                 return
 
+    async def async_check_message_code(self, code):
+        messages = await self.last_messages()
+        self.check_text = False
+        search_text = find_text_from_table(int(code))
+        for message in messages:
+            if search_text in message.text:
+                self.check_text = True
+                return
+
     def click_button(self, tex):
         with self.client:
             self.client.loop.run_until_complete(self.async_click_button(tex))
@@ -84,4 +100,9 @@ class User():
     def check_message(self, search_text):
         with self.client:
             self.client.loop.run_until_complete(self.async_check_message(search_text))
+        return self.check_text
+
+    def check_message_code(self, code):
+        with self.client:
+            self.client.loop.run_until_complete(self.async_check_message_code(code))
         return self.check_text

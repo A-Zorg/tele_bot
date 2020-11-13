@@ -1,3 +1,4 @@
+@sd_test12_bot
 Feature: finbot_spd_operation_MoneyTransferTicket
 
   Background: reaching button - "Банк"
@@ -15,6 +16,6 @@ Feature: finbot_spd_operation_MoneyTransferTicket
     Examples: transfer types
         |  button                                              |   element_code     |
         |  Обмін валюти і перерахування на картку Приватбанк   |                    |
-        |  Обмін валюти і перерахування на картку інших банків |                    |
-        |  Перерахування грн на картку Приватбанк              |                    |
-        |  Перерахування грн на картку іншого банку            |                    |
+#        |  Обмін валюти і перерахування на картку інших банків |                    |
+#        |  Перерахування грн на картку Приватбанк              |                    |
+#        |  Перерахування грн на картку іншого банку            |                    |
